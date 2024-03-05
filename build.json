@@ -1,0 +1,13 @@
+{
+	"linux": {
+		"prebuild": [
+			"rm -r ./testapp/zinc",
+			"cp -r ./source ./testapp/zinc"
+		],
+		"sources": ["testapp"],
+		"includes": ["testapp"],
+		"links": ["m"],
+		"defines": [],
+		"output": "testapp"
+	}
+}
