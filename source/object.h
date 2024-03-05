@@ -24,9 +24,7 @@ enum {
 };
 
 typedef struct {
-	//ZNSelector name;
 	ZNMethodFunction function;
-	//uint32_t name_hash;
 	ZNMethodFlags flags;
 } ZNMethodData;
 
@@ -36,10 +34,8 @@ typedef struct {
 typedef uint32_t ZNFeildFlags;
 
 typedef struct {
-	//ZNSelector name;
 	size_t size;
 	size_t offset;
-	//uint32_t name_hash;
 	ZNFeildFlags flags;
 } ZNFeildData;
 
@@ -74,3 +70,26 @@ typedef struct ZNObjectData {
 // typedef struct {
 // 	ZNMap classes;
 // } ZNProgram;
+
+/**
+ * Class creation info
+ */
+typedef struct {
+	ZNSelector sel; // Name of the method
+	ZNMethodFunction func; // which function to call
+	bool for_class; // if this is a class method or not
+} ZNClassMethod;
+
+typedef struct {
+	ZNSelector sel; // name of the feild
+	size_t size; // size of the feild
+	// offset is computed automatically
+} ZNClassFeild;
+
+/**
+ * Program wide info
+ */
+typedef struct {
+	ZNClass default_class;
+	ZNClass class_ref;
+} ZNProgram;

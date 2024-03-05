@@ -22,6 +22,10 @@ void ZNMapRelease(ZNMap *this) {
 }
 
 static int64_t ZNMapFind(ZNMap *this, ZNMapKey key) {
+	if (!this->keys || !this->values) {
+		return -1;
+	}
+	
 	for (size_t i = 0; i < this->count; i++) {
 		if (ZNStringEqual(this->keys[i], key)) {
 			return i;

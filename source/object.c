@@ -1,6 +1,6 @@
 #include "object.h"
 
-ZNClass base_class;
+ZNProgram zinc;
 
 static ZNResult ZNClassInit(ZNClass this) {
 	ZNClean(this, sizeof *this);
@@ -14,7 +14,7 @@ static void ZNClassRelease(ZNClass this) {
 	ZNMapRelease(ZNMapFreeValues(&this->methods));
 }
 
-ZNClass ZNCreateClass(void) {
+ZNClass ZNCreateEmptyClass(void) {
 	/**
 	 * Create a new class.
 	 */
@@ -103,6 +103,95 @@ ZNResult ZNClassRecalculateSizes(ZNClass this) {
 	
 	for (size_t i = 0; i < feild_count; i++) {
 		ZNFeildData *fd = ZNMapAt(&this->feilds, i);
-		ZNFeildData *fd_next = ZNMapAt(&this->feilds, i + 1);
+		
+		// Set new offset, since we have that
+		fd->offset = offset;
+		
+		// Find padding (could be improved)
+		size_t padding = ZN_ALIGN - (fd->size % ZN_ALIGN);
+		
+		// Calculate offset and new local size
+		offset += fd->size + padding;
+		local += fd->size + padding;
 	}
+	
+	this->total_size = offset;
+	this->local_size = local;
+	
+	return ZN_SUCCESS;
+}
+
+ZNClass ZNCreateClass(ZNClass parent, ZNClassFeild *feilds[], ZNClassMethod *methods[]) {
+	ZNResult r;
+	ZNClass cls = ZNCreateEmptyClass();
+	
+	if (!cls) {
+		return NULL;
+	}
+	
+	if (parent) {
+		ZNClassSetParent(cls, parent);
+	}
+	else {
+		ZNClassSetParent(cls, zinc.default_class);
+	}
+	
+	for (size_t i = 0; feilds[i] != NULL; i++) {
+		r = ZNClassAddFeild(cls, feilds[i]->sel, feilds[i]->size, 0);
+		
+		if (r) {
+			ZNClassRelease(cls);
+			return NULL;
+		}
+	}
+	
+	for (size_t i = 0; methods[i] != NULL; i++) {
+		r = ZNClassAddMethod(cls, methods[i]->sel, methods[i]->func, methods[i]->for_class ? ZN_METHOD_CLASS : 0);
+		
+		if (r) {
+			ZNClassRelease(cls);
+			return NULL;
+		}
+	}
+	
+	r = ZNClassRecalculateSizes(cls);
+	
+	if (r) {
+		ZNClassRelease(cls);
+		return NULL;
+	}
+	
+	return cls;
+}
+
+ZNObject ZNCreateObject(ZNClass class) {
+	ZNObject this = ZNMemory(NULL, sizeof *this);
+	
+	if (!this) {
+		return NULL;
+	}
+	
+	ZNClean(this, sizeof *this);
+	
+	this->class = class;
+	this->data = this->class ? ZNMemory(NULL, this->class->total_size) : NULL;
+	
+	return this;
+}
+
+ZNObject ZNObject_getClass(ZNObject this, ZNClass cls, ZNObject in) {
+	return (ZNObject) cls;
+}
+
+ZNResult ZNInit(void) {
+	zinc.default_class = ZNCreateClass(
+		NULL,
+		(ZNClassFeild *[]) {
+			NULL,
+		},
+		(ZNClassMethod *[]) {
+			&(ZNClassMethod) {"getClass", &ZNObject_getClass, false},
+			NULL,
+		}
+	);
 }
