@@ -70,7 +70,19 @@ ZNResult ZNMapAppend(ZNMap *this, ZNMapKey key, ZNMapValue value) {
 	return ZN_SUCCESS;
 }
 
-ZNMapValue ZNMapAt(ZNMap *this, size_t index) {
+ZNResult ZNMapSet(ZNMap *this, ZNMapKey key, ZNMapValue value) {
+	int64_t index = ZNMapFind(this, key);
+	
+	if (index < 0) {
+		return ZNMapAppend(this, key, value);
+	}
+	else {
+		this->values[index] = value;
+		return ZN_SUCCESS;
+	}
+}
+
+static ZNMapValue ZNMapAt(ZNMap *this, size_t index) {
 	if (index < this->count) {
 		return this->values[index];
 	}
@@ -79,13 +91,17 @@ ZNMapValue ZNMapAt(ZNMap *this, size_t index) {
 }
 
 ZNMapValue ZNMapGet(ZNMap *this, ZNMapKey key) {
-	size_t index = ZNMapFind(this, key);
+	int64_t index = ZNMapFind(this, key);
 	
 	if (index < 0) {
 		return NULL;
 	}
 	
 	return ZNMapAt(this, index);
+}
+
+bool ZNMapHas(ZNMap *this, ZNMapKey key) {
+	return ZNMapFind(this, key) >= 0;
 }
 
 size_t ZNMapCount(ZNMap *this) {

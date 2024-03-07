@@ -14,8 +14,11 @@ typedef struct {
 
 ZNResult ZNMapInit(ZNMap *this);
 void ZNMapRelease(ZNMap *this);
+
 ZNResult ZNMapAppend(ZNMap *this, ZNMapKey key, ZNMapValue value);
+ZNResult ZNMapSet(ZNMap *this, ZNMapKey key, ZNMapValue value);
 ZNMapValue ZNMapGet(ZNMap *this, ZNMapKey key);
-ZNMapValue ZNMapAt(ZNMap *this, size_t index);
+bool ZNMapHas(ZNMap *this, ZNMapKey key);
 size_t ZNMapCount(ZNMap *this);
+
 ZNMap *ZNMapFreeValues(ZNMap *this);

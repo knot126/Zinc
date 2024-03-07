@@ -3,19 +3,32 @@
 #include "common.h"
 
 /**
- * Object
+ * Generic type container
  */
-typedef struct ZNObjectData {
-	ZNClass class;
-	void *data;
-} ZNObjectData;
+typedef union ZNStorable {
+	void *asPointer;
+	ZNObject asObject;
+	int64_t asInteger;
+	uint64_t asUnsigned;
+	double asFloat64;
+	float asFloat32;
+	const char *asString;
+};
 
-typedef struct ZNObjectData *ZNObject;
+typedef const char *ZNSelector;
+typedef ZNStorable (*ZNMethod)(ZNObject this, ZNObject in);
 
 /**
- * Program wide info
+ * Object
  */
-typedef struct {
-	ZNClass default_class;
-	ZNClass class_ref;
-} ZNProgram;
+struct ZNObjectData;
+typedef struct ZNObjectData *ZNObject;
+
+typedef struct ZNObjectData {
+	ZNMap feilds;
+	ZNMap methods;
+	ZNObject prototype;
+} ZNObjectData;
+
+ZNObject ZNObjectCreate(ZNObject prototype);
+ZNObject ZNObjectRelease(ZNObject this);
