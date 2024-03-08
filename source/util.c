@@ -42,3 +42,19 @@ char *ZNStringDuplicate(const char * const string) {
 bool ZNStringEqual(const char *str1, const char *str2) {
 	return !strcmp(str1, str2);
 }
+
+size_t ZNStringCountChar(const char *str, char c) {
+	/**
+	 * Count the number of instances of `c` in `str`.
+	 */
+	
+	size_t count = 0;
+	
+	for (size_t i = 0; str[i]; i++) {
+		if (str[i] == c) {
+			count++;
+		}
+	}
+	
+	return count;
+}

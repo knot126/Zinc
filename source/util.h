@@ -12,3 +12,4 @@ void *ZNMemory(void *block, size_t size);
 void ZNClean(void *block, size_t size);
 char *ZNStringDuplicate(const char * const string);
 bool ZNStringEqual(const char *str1, const char *str2);
+size_t ZNStringCountChar(const char *str, char c);
