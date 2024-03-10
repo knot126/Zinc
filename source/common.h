@@ -4,3 +4,4 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <varargs.h>

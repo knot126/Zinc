@@ -136,7 +136,11 @@ static ZNObject ZNObjectSendMessageUsingPrototypeWithVaradicList(ZNObject this, 
 		return NULL;
 	}
 	
-	return ZNObjectSendMessageUsingParameterObject(this, sel, params);
+	ZNObject result = ZNObjectSendMessageUsingParameterObject(this, sel, params);
+	
+	ZNObjectRelease(params);
+	
+	return result;
 }
 
 ZNObject ZNSendMessage(ZNObject this, ZNSelector sel, ...) {
@@ -166,7 +170,7 @@ ZNObject ZNSendMessage(ZNObject this, ZNSelector sel, ...) {
 	
 	va_list args;
 	va_start(args, ZNStringCountChar(sel, ':'));
-	ZNObject ret = ZNObjectSendMessageUsingPrototypeWithVaradicList(this, sel, zinc__paramPrototype, );
+	ZNObject ret = ZNObjectSendMessageUsingPrototypeWithVaradicList(this, sel, zinc__paramPrototype, args);
 	va_end(args);
 	
 	return ret;
@@ -180,12 +184,28 @@ ZNStorable ZNObjectGetFeild(ZNObject this, ZNSelector which) {
 	return (ZNStorable) {.asPointer = ZNMapGet(&this->feilds, which)};
 }
 
+void *ZNGetVoidp(ZNObject this, ZNSelector which) {
+	return ZNObjectGetFeild(this, which).asPointer;
+}
+
+uint64_t ZNGetUInt64(ZNObject this, ZNSelector which) {
+	return ZNObjectGetFeild(this, which).asUnsigned64;
+}
+
 ZNResult ZNObjectSetFeild(ZNObject this, ZNSelector which, ZNStorable what) {
 	/**
 	 * Set the value of the given feild.
 	 */
 	
 	return ZNMapSet(&this->feilds, which, what.asPointer);
+}
+
+ZNResult ZNSetVoidp(ZNObject this, ZNSelector which, void *what) {
+	return ZNObjectSetFeild(this, which, (ZNStorable) {.asPointer = what});
+}
+
+ZNResult ZNSetUInt64(ZNObject this, ZNSelector which, uint64_t what) {
+	return ZNObjectSetFeild(this, which, (ZNStorable) {.asUnsigned64 = what});
 }
 
 bool ZNObjectHasFeild(ZNObject this, ZNSelector which) {

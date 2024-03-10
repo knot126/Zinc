@@ -38,8 +38,8 @@ static int64_t ZNMapFind(ZNMap *this, ZNMapKey key) {
 static ZNReuslt ZNMapExtend(ZNMap *this) {
 	this->prealloc = 2 + 2 * this->prealloc;
 	
-	this->keys = ZNMemory(this->keys, this->prealloc);
-	this->values = ZNMemory(this->values, this->prealloc);
+	this->keys = ZNMemory(this->keys, sizeof *this->keys * this->prealloc);
+	this->values = ZNMemory(this->values, sizeof *this->values * this->prealloc);
 	
 	if (!this->keys || !this->values) {
 		return ZN_FAIL;
