@@ -1,59 +1,72 @@
 #include "params.h"
 
-ZNObject zinc__ZNParamHandlerBegin(ZNObject this, ZNObject in) {
-	ZNSetVoidp(this, "data", NULL);
-	ZNSetUInt64(this, "count", 0);
+ZNArray ZNArrayCreate(void) {
+	/**
+	 * Create a new array
+	 */
 	
-	return NULL;
+	ZNArray arr = ZNMemory(NULL, sizeof *arr);
+	
+	if (!arr) {
+		return NULL;
+	}
+	
+	ZNClean(arr, sizeof *arr);
+	
+	return arr;
 }
 
-ZNObject zinc__ZNParamHandlerPut(ZNObject this, ZNObject in) {
-	void **data = ZNGetVoidp(this, "data");
-	uint64_t count = ZNGetUInt64(this, "count");
+void ZNArrayDestroy(ZNArray this) {
+	/**
+	 * Destroy an array and assocaited memory
+	 */
 	
-	count++;
-	
-	data = ZNMemory(data, sizeof *data * count);
-	
-	data[count - 1] = (void *) in;
-	
-	ZNSetVoidp(this, "data", data);
-	ZNSetUInt64(this, "count", count);
-	
-	return NULL;
+	ZNMemory(this->items, 0);
+	ZNMemory(this, 0);
 }
 
-ZNObject zinc__ZNParamHandlerGet(ZNObject this, ZNObject in) {
-	return NULL;
+static ZNResult ZNArrayExpand(ZNArray this) {
+	/**
+	 * Expand an array
+	 */
+	
+	this->alloced = 2 + 2 * this->alloced;
+	this->items = ZNMemory(this->items, sizeof *this->items * this->alloced);
+	
+	return (this->items) ? ZN_SUCCESS : ZN_FAIL;
 }
 
-ZNObject zinc__ZNParamHandlerGetPointer(ZNObject this, ZNObject in) {
-	return NULL;
+static ZNResult ZNArrayPush(ZNArray this, ZNValue value) {
+	/**
+	 * Push a new value onto the end of the array
+	 */
+	
+	if (this->count <= this->alloced) {
+		ZNResult result = ZNArrayExpand(this);
+		
+		if (result) {
+			return result;
+		}
+	}
+	
+	this->items[this->count] = value;
+	this->count++;
+	
+	return ZN_SUCCESS;
 }
 
-ZNObject zinc__ZNParamHandlerEnd(ZNObject this, ZNObject in) {
-	return NULL;
-}
-
-ZNObject zinc__ZNParamHandlerRelease(ZNObject this, ZNObject in) {
-	void **data = ZNGetVoidp(this, "data");
+static ZNValue ZNArrayGet(ZNArray this, int64_t index) {
+	/**
+	 * Get an item from the index
+	 */
 	
-	ZNMemory(data, 0);
+	if (index < 0) {
+		index = index + this->count;
+	}
 	
-	return NULL;
-}
-
-ZNObject ZNInitParamHandler(void) {
-	ZNObject ph = ZNObjectCreate(NULL);
+	if (index < 0 || index >= this->count) {
+		return (ZNValue) {ZN_TYPE_NIL, ZNToUInt64(0)};
+	}
 	
-	ZNObjectAddMethod(ph, "begin", zinc__ZNParamHandlerBegin);
-	ZNObjectAddMethod(ph, "put:", zinc__ZNParamHandlerPut);
-	ZNObjectAddMethod(ph, "get:", zinc__ZNParamHandlerGet);
-	ZNObjectAddMethod(ph, "getPointer:", zinc__ZNParamHandlerGetPointer);
-	ZNObjectAddMethod(ph, "end", zinc__ZNParamHandlerEnd);
-	ZNObjectAddMethod(ph, "release", zinc__ZNParamHandlerRelease);
-	
-	ZNSetParamObjectPrototype(ph);
-	
-	return ph;
+	return this->items[index];
 }
